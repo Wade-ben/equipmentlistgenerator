@@ -1,0 +1,66 @@
+<div>
+  <label>
+    Event Name:
+    <input type="text" id="eventName" oninput="updateString()">
+  </label>
+
+  <fieldset id="equipmentList">
+    <legend>Equipment</legend>
+    <!-- checkboxes will be injected here -->
+  </fieldset>
+
+  <div id="output">Formatted Output Will Appear Here</div>
+  <button onclick="copyToClipboard()">Copy to Clipboard</button>
+</div>
+
+<script>
+  // Parse ?equipment=... from URL
+  function getEquipmentListFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const eq = params.get('equipment');
+    return eq ? eq.split(',') : [];
+  }
+
+  // Build checkboxes dynamically
+  function populateEquipmentCheckboxes() {
+    const list = getEquipmentListFromURL();
+    const container = document.getElementById('equipmentList');
+    list.forEach(item => {
+      const label = document.createElement('label');
+      label.style.display = 'block';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = item;
+      checkbox.onchange = updateString;
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(' ' + item));
+      container.appendChild(label);
+    });
+  }
+
+  // Update output string
+  function updateString() {
+    const eventName = document.getElementById('eventName').value.trim();
+    const checkboxes = document.querySelectorAll('#equipmentList input[type="checkbox"]');
+    const selectedItems = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+
+    const result = [eventName, ...selectedItems].filter(Boolean).join(' - ');
+    document.getElementById('output').textContent = result || 'Formatted Output Will Appear Here';
+  }
+
+  // Copy to clipboard
+  function copyToClipboard() {
+    const text = document.getElementById('output').textContent;
+    if (!text || text === 'Formatted Output Will Appear Here') return;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Copied to clipboard!');
+    }, () => {
+      alert('Failed to copy');
+    });
+  }
+
+  // Init on load
+  populateEquipmentCheckboxes();
+</script>
